@@ -1,54 +1,25 @@
+// index.js
 import { Telegraf } from 'telegraf';
-import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
+// Configure dotenv to load environment variables from .env file
 dotenv.config();
 
-// Use your bot token from the .env file
+// Create a new Telegraf bot instance with your bot token from the environment variable
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-bot.start((ctx) => {
-    ctx.reply('Welcome to your AI Personal Assistant! Ask me anything.');
+// Command /start
+bot.start((ctx) => ctx.reply('Welcome to the Telegram bot!'));
+
+// Command /help
+bot.help((ctx) => ctx.reply('This is a help message!'));
+
+// Echo any text message sent to the bot
+bot.on('text', (ctx) => ctx.reply(`You said: ${ctx.message.text}`));
+
+// Launch the bot
+bot.launch().then(() => {
+    console.log('Bot is running!');
+}).catch(err => {
+    console.error('Error launching the bot:', err);
 });
-
-bot.on('text', async (ctx) => {
-    const text = ctx.message.text;
-
-    if (!text) {
-        ctx.reply("Please provide some text.");
-        return;
-    }
-
-    try {
-        ctx.telegram.sendChatAction(ctx.chat.id, 'typing');
-        const prompt = encodeURIComponent(text);
-
-        const guru1 = `https://api.gurusensei.workers.dev/llama?prompt=${prompt}`;
-        let response = await fetch(guru1);
-        let data = await response.json();
-        let result = data.response.response;
-
-        if (!result) {
-            throw new Error('No valid JSON response from the first API');
-        }
-
-        await ctx.reply(result);
-    } catch (error) {
-        console.error('Error from the first API:', error);
-        const guru2 = `https://ultimetron.guruapi.tech/gpt3?prompt=${prompt}`;
-
-        try {
-            let response = await fetch(guru2);
-            let data = await response.json();
-            let result = data.completion;
-
-            await ctx.reply(result);
-        } catch (err) {
-            console.error('Error:', err);
-            await ctx.reply("*ERROR*");
-        }
-    }
-});
-
-bot.launch();
-console.log('Bot is running...');
