@@ -1,20 +1,17 @@
-# Use the official Node.js image as a parent image
-FROM node:18
+# Use the official Node.js image as the base
+FROM node:22.11.0
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy the package.json and package-lock.json
 COPY package*.json ./
 
-# Install necessary packages
+# Install dependencies
 RUN npm install
 
 # Copy the rest of the application code
 COPY . .
 
-# Expose the port (if you're using a web interface; otherwise it's not strictly necessary)
-EXPOSE 3000
-
-# Run the bot
+# Command to run the bot
 CMD ["node", "index.js"]
