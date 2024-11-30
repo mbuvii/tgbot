@@ -1,14 +1,16 @@
 {
-  "name": "bottg",
+  "name": "telegram-bot",
   "version": "1.0.0",
-  "description": "A Telegram bot",
+  "description": "A Telegram bot AI personal assistant",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.51.0"
+    "telegraf": "^4.0.0",
+    "node-fetch": "^2.6.7",
+    "dotenv": "^10.0.0"
   },
-  "author": "",
+  "author": "Cheeky Davy",
   "license": "ISC"
 }
