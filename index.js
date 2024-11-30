@@ -2,6 +2,7 @@
 import { Telegraf } from 'telegraf';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import express from 'express';
 
 // Load environment variables
 dotenv.config();
@@ -9,6 +10,25 @@ dotenv.config();
 // Create a bot instance using the token from environment variables
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
+// Initialize Express app
+const app = express();
+
+// Add a simple route (could be useful for health checks)
+app.get('/', (req, res) => {
+  res.send('Bot is running');
+});
+
+// Handle incoming messages
+bot.on('text', (ctx) => {
+  const text = ctx.message.text;
+  if (!text) {
+    return ctx.reply("Please provide some text.");
+  }
+
+  handleResponse(ctx, text);
+});
+
+// Function to handle API responses
 const handleResponse = async (ctx, prompt) => {
   const guru1 = `https://api.gurusensei.workers.dev/llama?prompt=${encodeURIComponent(prompt)}`;
 
@@ -24,7 +44,6 @@ const handleResponse = async (ctx, prompt) => {
       throw new Error('No valid JSON response from the first API');
     }
 
-    // Send the response back to the user
     await ctx.reply(result);
   } catch (error) {
     console.error('Error from the first API:', error);
@@ -37,7 +56,6 @@ const handleResponse = async (ctx, prompt) => {
       let data = await response.json();
       let result = data.completion;
 
-      // Send the response back to the user
       await ctx.reply(result);
     } catch (secondError) {
       console.error('Error from the second API:', secondError);
@@ -46,19 +64,15 @@ const handleResponse = async (ctx, prompt) => {
   }
 };
 
-// Handle incoming messages
-bot.on('text', (ctx) => {
-  const text = ctx.message.text;
-  if (!text) {
-    return ctx.reply("Please provide some text.");
-  }
-
-  handleResponse(ctx, text);
-});
-
 // Start the bot
 bot.launch().then(() => {
   console.log('Bot is running!');
 }).catch(err => {
-  console.error('Error launching the bot: ', err);
+  console.error('Error launching the bot:', err);
+});
+
+// Start the Express server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
