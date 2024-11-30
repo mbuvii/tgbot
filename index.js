@@ -4,32 +4,40 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import express from 'express';
 
-// Load environment variables
 dotenv.config();
 
-// Create a bot instance using the token from environment variables
 const bot = new Telegraf(process.env.BOT_TOKEN);
-
-// Initialize Express app
 const app = express();
 
-// Add a simple route (could be useful for health checks)
+// Simple in-memory store for user contexts
+const userContexts = {};
+
+// Basic route for health check
 app.get('/', (req, res) => {
   res.send('Bot is running');
 });
 
 // Handle incoming messages
 bot.on('text', (ctx) => {
+  const userId = ctx.from.id; // Get user ID from the message
   const text = ctx.message.text;
-  if (!text) {
-    return ctx.reply("Please provide some text.");
+
+  // Initialize user's context if not present
+  if (!userContexts[userId]) {
+    userContexts[userId] = {
+      history: [], // History of messages
+    };
   }
 
-  handleResponse(ctx, text);
+  // Add the incoming text to the user's history
+  userContexts[userId].history.push(text);
+
+  // Handle the response
+  handleResponse(ctx, text, userContexts[userId].history);
 });
 
 // Function to handle API responses
-const handleResponse = async (ctx, prompt) => {
+const handleResponse = async (ctx, prompt, history) => {
   const guru1 = `https://api.gurusensei.workers.dev/llama?prompt=${encodeURIComponent(prompt)}`;
 
   try {
@@ -44,6 +52,9 @@ const handleResponse = async (ctx, prompt) => {
       throw new Error('No valid JSON response from the first API');
     }
 
+    // Optionally, append the response to history
+    history.push(result);
+    
     await ctx.reply(result);
   } catch (error) {
     console.error('Error from the first API:', error);
@@ -56,6 +67,9 @@ const handleResponse = async (ctx, prompt) => {
       let data = await response.json();
       let result = data.completion;
 
+      // Append to history
+      history.push(result);
+
       await ctx.reply(result);
     } catch (secondError) {
       console.error('Error from the second API:', secondError);
@@ -65,11 +79,7 @@ const handleResponse = async (ctx, prompt) => {
 };
 
 // Start the bot
-bot.launch().then(() => {
-  console.log('Bot is running!');
-}).catch(err => {
-  console.error('Error launching the bot:', err);
-});
+bot.launch().then(() => console.log('Bot is running!')).catch(err => console.error('Error launching the bot:', err));
 
 // Start the Express server
 const PORT = process.env.PORT || 3000;
