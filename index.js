@@ -38,7 +38,7 @@ bot.on('text', (ctx) => {
 
 // Function to handle API responses
 const handleResponse = async (ctx, prompt, history) => {
-  const guru1 = `https://api.gurusensei.workers.dev/llama?prompt=${encodeURIComponent(prompt)}`;
+  const guru1 = `https://apigemini-a5cf3977cb14.herokuapp.com/api/generate?prompt=${encodeURIComponent(prompt)}`;
 
   try {
     ctx.replyWithChatAction('typing');
