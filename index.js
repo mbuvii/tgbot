@@ -31,7 +31,7 @@ bot.on('text', (ctx) => {
 // Function to handle API responses
 const handleResponse = async (ctx, prompt) => {
   // Use the new API endpoint
-  const apiUrl = `https://apigemini-a5cf3977cb14.herokuapp.com/api/generate?prompt=${encodeURIComponent(prompt)}`;
+  const apiUrl = `https://apigeminitg-84907125b34c.herokuapp.com/api/generate?prompt=${encodeURIComponent(prompt)}`;
 
   try {
     ctx.replyWithChatAction('typing');
